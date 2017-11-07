@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.collections.MapUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -25,6 +27,8 @@ import com.coffee.activemq.common.utils.EncryptUtil;
  * */
 public class DynamicCreateBean implements ApplicationContextAware,
 		ApplicationListener {
+	private static Logger LOGGER = LoggerFactory
+			.getLogger(DynamicCreateBean.class);
 
 	private ConfigurableApplicationContext app;
 
@@ -38,11 +42,11 @@ public class DynamicCreateBean implements ApplicationContextAware,
 	public void onApplicationEvent(final ApplicationEvent event) {
 		// 如果是容器刷新事件OR Start Event
 		if (event instanceof JmsTemplateEvent) {
-			System.out.println("监听到JmsTemplateEvent");
+			LOGGER.info("监听到JmsTemplateEvent");
 			try {
 				this.regDynamicJmsTemplatBean(event.getSource());
 			} catch (final Exception e) {
-				e.printStackTrace();
+				LOGGER.error("Failed to register bean.", e);
 			}
 		}
 	}
@@ -118,7 +122,7 @@ public class DynamicCreateBean implements ApplicationContextAware,
 				// 注册bean
 				acf.registerBeanDefinition(beanKey, bdb.getBeanDefinition());
 
-				// 
+				// 置于缓存
 				MqJmsTemplateCache.getInstance().getJmsTemplateMap()
 						.put(key, (JmsTemplate) acf.getBean(beanKey));
 			}

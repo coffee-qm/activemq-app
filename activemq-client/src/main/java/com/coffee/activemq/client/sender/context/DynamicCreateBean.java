@@ -55,7 +55,7 @@ public class DynamicCreateBean implements ApplicationContextAware, ApplicationLi
 	 * */
 	private void regDynamicJmsTemplatBean(final Object o) {
 		// 把JmsTemplate bean注册到容器中
-		if(o instanceof Map){
+		if (o instanceof Map) {
 			final Map<String, MqJmsTemplateInfo> mqJmsTemplateInfoMap = (Map<String, MqJmsTemplateInfo>) o;
 			this.addJmsTemplateBeanToApp(mqJmsTemplateInfoMap);
 		}
@@ -70,8 +70,8 @@ public class DynamicCreateBean implements ApplicationContextAware, ApplicationLi
 					.getAutowireCapableBeanFactory();
 			// 
 			BeanDefinitionBuilder bdb;
-			BeanDefinitionBuilder bdb_cf; // 链接
-			BeanDefinitionBuilder bdb_cf_pool; // 链接池
+			BeanDefinitionBuilder bdbConn; // 链接
+			BeanDefinitionBuilder bdbConnPool; // 链接池
 			final Iterator<String> iter = mqJmsTemplateInfoMap.keySet().iterator();
 			// 根据数据源得到数据，动态创建bean 并将bean注册到applicationContext中去
 			while (iter.hasNext()) {
@@ -81,36 +81,36 @@ public class DynamicCreateBean implements ApplicationContextAware, ApplicationLi
 				final MqJmsTemplateInfo vo = mqJmsTemplateInfoMap.get(key);
 				// 1. 链接
 				// 创建bean
-				final String beanKey_cf = "ACTIVEMQ_CONNECTION_FACTORY_" + key;
-				bdb_cf = BeanDefinitionBuilder
+				final String beanKeyConn = "ACTIVEMQ_CONNECTION_FACTORY_" + key;
+				bdbConn = BeanDefinitionBuilder
 						.rootBeanDefinition(MqConstants.ACTIVEMQ_CONNECTION_FACTORY_BEAN_CLASS);
-				bdb_cf.getBeanDefinition().setAttribute("id", beanKey_cf);
-				bdb_cf.addPropertyValue("brokerURL",
+				bdbConn.getBeanDefinition().setAttribute("id", beanKeyConn);
+				bdbConn.addPropertyValue("brokerURL",
 						"tcp://" + vo.getHostIp() + ":" + vo.getHostPort());
-				bdb_cf.addPropertyValue("userName", vo.getUserName());
-				bdb_cf.addPropertyValue("password",
+				bdbConn.addPropertyValue("userName", vo.getUserName());
+				bdbConn.addPropertyValue("password",
 						EncryptUtil.getInstance().DESdecode(vo.getUserPwd(), "activemq"));
 				// 注册bean
-				acf.registerBeanDefinition(beanKey_cf, bdb_cf.getBeanDefinition());
+				acf.registerBeanDefinition(beanKeyConn, bdbConn.getBeanDefinition());
 
 				// 2. 链接池
 				// 创建bean
-				final String beanKey_cf_pool = "POOLED_CONNECTION_FACTORY_" + key;
-				bdb_cf_pool = BeanDefinitionBuilder
+				final String beanKeyConnPool = "POOLED_CONNECTION_FACTORY_" + key;
+				bdbConnPool = BeanDefinitionBuilder
 						.rootBeanDefinition(MqConstants.POOLED_CONNECTION_FACTORY_BEAN_CLASS);
-				bdb_cf_pool.getBeanDefinition().setAttribute("id", beanKey_cf_pool);
-				bdb_cf_pool.addPropertyReference("connectionFactory", beanKey_cf);
-				bdb_cf_pool.addPropertyValue("maxConnections", vo.getMaxConnections());
-				bdb_cf_pool.setDestroyMethodName("stop");
+				bdbConnPool.getBeanDefinition().setAttribute("id", beanKeyConnPool);
+				bdbConnPool.addPropertyReference("connectionFactory", beanKeyConn);
+				bdbConnPool.addPropertyValue("maxConnections", vo.getMaxConnections());
+				bdbConnPool.setDestroyMethodName("stop");
 				// 注册bean
-				acf.registerBeanDefinition(beanKey_cf_pool, bdb_cf_pool.getBeanDefinition());
+				acf.registerBeanDefinition(beanKeyConnPool, bdbConnPool.getBeanDefinition());
 
 				// 3. JmsTemplate
 				// 创建bean
 				final String beanKey = "jmsQueueTemplate_" + key;
 				bdb = BeanDefinitionBuilder.rootBeanDefinition(MqConstants.JMS_TEMPLATE_BEAN_CLASS);
 				bdb.getBeanDefinition().setAttribute("id", beanKey);
-				bdb.addConstructorArgReference(beanKey_cf_pool);
+				bdb.addConstructorArgReference(beanKeyConnPool);
 				bdb.addPropertyValue("pubSubDomain", "false");
 				// 注册bean
 				acf.registerBeanDefinition(beanKey, bdb.getBeanDefinition());

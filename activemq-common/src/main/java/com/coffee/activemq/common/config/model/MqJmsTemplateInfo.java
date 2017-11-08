@@ -5,12 +5,30 @@ package com.coffee.activemq.common.config.model;
  */
 public class MqJmsTemplateInfo {
 	private Long id;
-	private String hostCode; // 编码
-	private String hostIp; // IP
-	private String hostPort;// 端口号
-	private String userName; // 用户名
-	private String userPwd; // 密码
-	private Integer maxConnections; // 最大链接数
+	/**
+	 * 编码
+	 */
+	private String hostCode;
+	/**
+	 * IP
+	 */
+	private String hostIp;
+	/**
+	 * 端口号
+	 */
+	private String hostPort;
+	/**
+	 * 用户名
+	 */
+	private String userName;
+	/**
+	 * 密码
+	 */
+	private String userPwd;
+	/**
+	 * 最大链接数
+	 */
+	private Integer maxConnections;
 
 	public Long getId() {
 		return id;

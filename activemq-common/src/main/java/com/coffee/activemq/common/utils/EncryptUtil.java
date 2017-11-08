@@ -15,7 +15,7 @@ public class EncryptUtil {
 	public static final String DES = "DES";
 
 	/** 编码格式；默认null为GBK */
-	public String charset = "UTF8"; // 
+	public String charset = "UTF8";
 
 	public int keysizeDES = 56;
 
@@ -74,8 +74,9 @@ public class EncryptUtil {
 	}
 
 	private static byte[] parseHexStr2Byte(final String hexStr) {
-		if (hexStr.length() < 1)
+		if (hexStr.length() < 1) {
 			return null;
+		}
 		final byte[] result = new byte[hexStr.length() / 2];
 		for (int i = 0; i < hexStr.length() / 2; i++) {
 			final int high = Integer.parseInt(hexStr.substring(i * 2, i * 2 + 1), 16);
@@ -85,17 +86,17 @@ public class EncryptUtil {
 		return result;
 	}
 
-	public String DESencode(final String res, final String key) {
+	public String encodeDes(final String res, final String key) {
 		return keyGeneratorES(res, DES, key, keysizeDES, true);
 	}
 
-	public String DESdecode(final String res, final String key) {
+	public String decodeDes(final String res, final String key) {
 		return keyGeneratorES(res, DES, key, keysizeDES, false);
 	}
 
 	public static void main(final String[] args) {
-		final String encryptStr = EncryptUtil.getInstance().DESencode(args[0], "activemq");
+		final String encryptStr = EncryptUtil.getInstance().encodeDes(args[0], "activemq");
 		System.out.println("[" + args[0] + "][" + encryptStr + "][" + encryptStr.length() + "]["
-				+ EncryptUtil.getInstance().DESdecode(encryptStr, "activemq") + "]");
+				+ EncryptUtil.getInstance().decodeDes(encryptStr, "activemq") + "]");
 	}
 }

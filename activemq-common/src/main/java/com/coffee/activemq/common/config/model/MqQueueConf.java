@@ -13,9 +13,9 @@ public class MqQueueConf implements Serializable {
 	private static final long serialVersionUID = -3741291246353192155L;
 	private Long id;
 	private String queueCode;
-	private String queueName;//
-	private String queueDesc;//
-	private String queueMemo;//
+	private String queueName;
+	private String queueDesc;
+	private String queueMemo;
 	private String hostCodeReceiver;
 
 	public Long getId() {

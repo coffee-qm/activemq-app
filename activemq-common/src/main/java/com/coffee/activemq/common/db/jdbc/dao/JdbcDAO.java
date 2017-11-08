@@ -128,11 +128,11 @@ public class JdbcDAO {
 			return;
 		}
 		try {
-			final List<Object> _val = new ArrayList<Object>();
+			final List<Object> v = new ArrayList<Object>();
 			for (final Object o : val) {
-				_val.add(o == null ? "" : o);
+				v.add(o == null ? "" : o);
 			}
-			jdbcTemplate.update(sql, _val.toArray());
+			jdbcTemplate.update(sql, v.toArray());
 		} catch (final Exception e) {
 			LOGGER.error("get error in " + this.getClass().getName()
 					+ ".insertBySql(String latnId, String sql, List<Object> val)", e);

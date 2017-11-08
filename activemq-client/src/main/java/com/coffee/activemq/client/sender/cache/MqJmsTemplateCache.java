@@ -5,10 +5,14 @@ import java.util.Map;
 
 import org.springframework.jms.core.JmsTemplate;
 
+/**
+ * @author QM
+ */
 public class MqJmsTemplateCache {
 
 	private static MqJmsTemplateCache instance = null;
-	private Map<String, JmsTemplate> jmsTemplateMap = new HashMap<String, JmsTemplate>();// 
+
+	private Map<String, JmsTemplate> jmsTemplateMap = new HashMap<String, JmsTemplate>();
 
 	public synchronized static MqJmsTemplateCache getInstance() {
 		if (instance == null) {

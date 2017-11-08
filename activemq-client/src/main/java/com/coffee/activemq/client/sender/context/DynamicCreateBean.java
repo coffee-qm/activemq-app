@@ -24,17 +24,16 @@ import com.coffee.activemq.common.utils.EncryptUtil;
 
 /**
  * 动态注册JmsTemplate Bean
+ * 
+ * @author QM
  * */
-public class DynamicCreateBean implements ApplicationContextAware,
-		ApplicationListener {
-	private static Logger LOGGER = LoggerFactory
-			.getLogger(DynamicCreateBean.class);
+public class DynamicCreateBean implements ApplicationContextAware, ApplicationListener {
+	private static Logger LOGGER = LoggerFactory.getLogger(DynamicCreateBean.class);
 
 	private ConfigurableApplicationContext app;
 
 	@Override
-	public void setApplicationContext(final ApplicationContext ac)
-			throws BeansException {
+	public void setApplicationContext(final ApplicationContext ac) throws BeansException {
 		this.app = (ConfigurableApplicationContext) ac;
 	}
 
@@ -56,13 +55,15 @@ public class DynamicCreateBean implements ApplicationContextAware,
 	 * */
 	private void regDynamicJmsTemplatBean(final Object o) {
 		// 把JmsTemplate bean注册到容器中
-		addJmsTemplateBeanToApp(o);
+		if(o instanceof Map){
+			final Map<String, MqJmsTemplateInfo> mqJmsTemplateInfoMap = (Map<String, MqJmsTemplateInfo>) o;
+			this.addJmsTemplateBeanToApp(mqJmsTemplateInfoMap);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private void addJmsTemplateBeanToApp(final Object o) {
+	private void addJmsTemplateBeanToApp(final Map<String, MqJmsTemplateInfo> mqJmsTemplateInfoMap) {
 		// 获取MQ中间件配置信息Map
-		final Map<String, MqJmsTemplateInfo> mqJmsTemplateInfoMap = (Map<String, MqJmsTemplateInfo>) o;
 		if (MapUtils.isNotEmpty(mqJmsTemplateInfoMap)) {
 			// 
 			final DefaultListableBeanFactory acf = (DefaultListableBeanFactory) app
@@ -71,8 +72,7 @@ public class DynamicCreateBean implements ApplicationContextAware,
 			BeanDefinitionBuilder bdb;
 			BeanDefinitionBuilder bdb_cf; // 链接
 			BeanDefinitionBuilder bdb_cf_pool; // 链接池
-			final Iterator<String> iter = mqJmsTemplateInfoMap.keySet()
-					.iterator();
+			final Iterator<String> iter = mqJmsTemplateInfoMap.keySet().iterator();
 			// 根据数据源得到数据，动态创建bean 并将bean注册到applicationContext中去
 			while (iter.hasNext()) {
 				// bean ID
@@ -85,37 +85,30 @@ public class DynamicCreateBean implements ApplicationContextAware,
 				bdb_cf = BeanDefinitionBuilder
 						.rootBeanDefinition(MqConstants.ACTIVEMQ_CONNECTION_FACTORY_BEAN_CLASS);
 				bdb_cf.getBeanDefinition().setAttribute("id", beanKey_cf);
-				bdb_cf.addPropertyValue("brokerURL", "tcp://" + vo.getHostIp()
-						+ ":" + vo.getHostPort());
+				bdb_cf.addPropertyValue("brokerURL",
+						"tcp://" + vo.getHostIp() + ":" + vo.getHostPort());
 				bdb_cf.addPropertyValue("userName", vo.getUserName());
-				bdb_cf.addPropertyValue("password", EncryptUtil.getInstance()
-						.DESdecode(vo.getUserPwd(), "activemq"));
+				bdb_cf.addPropertyValue("password",
+						EncryptUtil.getInstance().DESdecode(vo.getUserPwd(), "activemq"));
 				// 注册bean
-				acf.registerBeanDefinition(beanKey_cf,
-						bdb_cf.getBeanDefinition());
+				acf.registerBeanDefinition(beanKey_cf, bdb_cf.getBeanDefinition());
 
 				// 2. 链接池
 				// 创建bean
-				final String beanKey_cf_pool = "POOLED_CONNECTION_FACTORY_"
-						+ key;
+				final String beanKey_cf_pool = "POOLED_CONNECTION_FACTORY_" + key;
 				bdb_cf_pool = BeanDefinitionBuilder
 						.rootBeanDefinition(MqConstants.POOLED_CONNECTION_FACTORY_BEAN_CLASS);
-				bdb_cf_pool.getBeanDefinition().setAttribute("id",
-						beanKey_cf_pool);
-				bdb_cf_pool.addPropertyReference("connectionFactory",
-						beanKey_cf);
-				bdb_cf_pool.addPropertyValue("maxConnections",
-						vo.getMaxConnections());
+				bdb_cf_pool.getBeanDefinition().setAttribute("id", beanKey_cf_pool);
+				bdb_cf_pool.addPropertyReference("connectionFactory", beanKey_cf);
+				bdb_cf_pool.addPropertyValue("maxConnections", vo.getMaxConnections());
 				bdb_cf_pool.setDestroyMethodName("stop");
 				// 注册bean
-				acf.registerBeanDefinition(beanKey_cf_pool,
-						bdb_cf_pool.getBeanDefinition());
+				acf.registerBeanDefinition(beanKey_cf_pool, bdb_cf_pool.getBeanDefinition());
 
 				// 3. JmsTemplate
 				// 创建bean
 				final String beanKey = "jmsQueueTemplate_" + key;
-				bdb = BeanDefinitionBuilder
-						.rootBeanDefinition(MqConstants.JMS_TEMPLATE_BEAN_CLASS);
+				bdb = BeanDefinitionBuilder.rootBeanDefinition(MqConstants.JMS_TEMPLATE_BEAN_CLASS);
 				bdb.getBeanDefinition().setAttribute("id", beanKey);
 				bdb.addConstructorArgReference(beanKey_cf_pool);
 				bdb.addPropertyValue("pubSubDomain", "false");

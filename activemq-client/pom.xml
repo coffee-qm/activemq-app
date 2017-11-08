@@ -63,8 +63,8 @@
                 <configuration>
                     <fork>true</fork>
                     <defaultLibBundleDir>lib</defaultLibBundleDir>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>

@@ -4,6 +4,8 @@ import org.springframework.context.ApplicationEvent;
 
 /**
  * JmsTemplate Event
+ * 
+ * @author QM
  * */
 public class JmsTemplateEvent extends ApplicationEvent {
 

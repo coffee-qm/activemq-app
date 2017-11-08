@@ -1,5 +1,8 @@
 package com.coffee.activemq.common;
 
+/**
+ * @author QM
+ */
 public interface MqConstants {
 
 	/* Bean Class */

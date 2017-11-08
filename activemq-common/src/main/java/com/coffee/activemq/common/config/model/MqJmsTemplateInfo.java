@@ -1,5 +1,8 @@
 package com.coffee.activemq.common.config.model;
 
+/**
+ * @author QM
+ */
 public class MqJmsTemplateInfo {
 	private Long id;
 	private String hostCode; // 编码

@@ -7,17 +7,28 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author QM
  */
 public class EncryptUtil {
 
-	public static final String DES = "DES";
+	private static Logger LOGGER = LoggerFactory.getLogger(EncryptUtil.class);
 
-	/** 编码格式；默认null为GBK */
-	public String charset = "UTF8";
+	private static final String DES = "DES";
 
-	public int keysizeDES = 56;
+	/**
+	 * 编码格式：默认null为GBK
+	 */
+	private static final String CHARSET_UTF8 = "UTF8";
+
+	private static final String ALGORITHM_SHA1PRNG = "SHA1PRNG";
+
+	private static final String CIPHER = "DES/ECB/PKCS5Padding";
+
+	private static final int KEY_SIZE_DES = 56;
 
 	public static EncryptUtil instance;
 
@@ -28,40 +39,53 @@ public class EncryptUtil {
 		return instance;
 	}
 
+	public String encodeDes(final String res, final String key) {
+		return keyGeneratorES(res, DES, key, KEY_SIZE_DES, Boolean.TRUE);
+	}
+
+	public String decodeDes(final String res, final String key) {
+		return keyGeneratorES(res, DES, key, KEY_SIZE_DES, Boolean.FALSE);
+	}
+
 	private String keyGeneratorES(final String res, final String algorithm, final String key,
 			final int keysize, final boolean isEncode) {
 		try {
+			//
 			final KeyGenerator kg = KeyGenerator.getInstance(algorithm);
-			final SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+			// 
+			final SecureRandom secureRandom = SecureRandom.getInstance(ALGORITHM_SHA1PRNG);
 			if (keysize == 0) {
-				final byte[] keyBytes = charset == null ? key.getBytes() : key.getBytes(charset);
+				final byte[] keyBytes = CHARSET_UTF8 == null ? key.getBytes() : key
+						.getBytes(CHARSET_UTF8);
 				secureRandom.setSeed(keyBytes);
 				kg.init(secureRandom);
 			} else if (key == null) {
 				kg.init(keysize);
 			} else {
-				final byte[] keyBytes = charset == null ? key.getBytes() : key.getBytes(charset);
+				final byte[] keyBytes = CHARSET_UTF8 == null ? key.getBytes() : key
+						.getBytes(CHARSET_UTF8);
 				secureRandom.setSeed(keyBytes);
 				kg.init(keysize, secureRandom);
 			}
 			final SecretKey sk = kg.generateKey();
 			final SecretKeySpec sks = new SecretKeySpec(sk.getEncoded(), algorithm);
-			final Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+			final Cipher cipher = Cipher.getInstance(CIPHER);
 			if (isEncode) {
 				cipher.init(Cipher.ENCRYPT_MODE, sks);
-				final byte[] resBytes = charset == null ? res.getBytes() : res.getBytes(charset);
-				return parseByte2HexStr(cipher.doFinal(resBytes));
+				final byte[] resBytes = CHARSET_UTF8 == null ? res.getBytes() : res
+						.getBytes(CHARSET_UTF8);
+				return this.parseByte2HexStr(cipher.doFinal(resBytes));
 			} else {
 				cipher.init(Cipher.DECRYPT_MODE, sks);
-				return new String(cipher.doFinal(parseHexStr2Byte(res)));
+				return new String(cipher.doFinal(this.parseHexStr2Byte(res)));
 			}
 		} catch (final Exception e) {
-			e.printStackTrace();
+			LOGGER.error("", e);
 		}
 		return null;
 	}
 
-	private static String parseByte2HexStr(final byte buf[]) {
+	private String parseByte2HexStr(final byte buf[]) {
 		final StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < buf.length; i++) {
 			String hex = Integer.toHexString(buf[i] & 0xFF);
@@ -73,7 +97,7 @@ public class EncryptUtil {
 		return sb.toString();
 	}
 
-	private static byte[] parseHexStr2Byte(final String hexStr) {
+	private byte[] parseHexStr2Byte(final String hexStr) {
 		if (hexStr.length() < 1) {
 			return null;
 		}
@@ -84,19 +108,5 @@ public class EncryptUtil {
 			result[i] = (byte) (high * 16 + low);
 		}
 		return result;
-	}
-
-	public String encodeDes(final String res, final String key) {
-		return keyGeneratorES(res, DES, key, keysizeDES, true);
-	}
-
-	public String decodeDes(final String res, final String key) {
-		return keyGeneratorES(res, DES, key, keysizeDES, false);
-	}
-
-	public static void main(final String[] args) {
-		final String encryptStr = EncryptUtil.getInstance().encodeDes(args[0], "activemq");
-		System.out.println("[" + args[0] + "][" + encryptStr + "][" + encryptStr.length() + "]["
-				+ EncryptUtil.getInstance().decodeDes(encryptStr, "activemq") + "]");
 	}
 }

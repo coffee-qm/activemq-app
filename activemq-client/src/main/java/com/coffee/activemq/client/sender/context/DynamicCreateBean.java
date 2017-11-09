@@ -28,6 +28,7 @@ import com.coffee.activemq.common.utils.EncryptUtil;
  * @author QM
  * */
 public class DynamicCreateBean implements ApplicationContextAware, ApplicationListener {
+
 	private static Logger LOGGER = LoggerFactory.getLogger(DynamicCreateBean.class);
 
 	private ConfigurableApplicationContext app;
@@ -61,7 +62,6 @@ public class DynamicCreateBean implements ApplicationContextAware, ApplicationLi
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void addJmsTemplateBeanToApp(final Map<String, MqJmsTemplateInfo> mqJmsTemplateInfoMap) {
 		// 获取MQ中间件配置信息Map
 		if (MapUtils.isNotEmpty(mqJmsTemplateInfoMap)) {

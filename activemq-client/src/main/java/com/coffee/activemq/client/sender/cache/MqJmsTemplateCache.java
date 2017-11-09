@@ -5,6 +5,10 @@ import java.util.Map;
 
 import org.springframework.jms.core.JmsTemplate;
 
+import com.coffee.activemq.common.exception.ErrorCode;
+import com.coffee.activemq.common.exception.ErrorMsg;
+import com.coffee.activemq.common.exception.QueueException;
+
 /**
  * @author QM
  */
@@ -29,4 +33,10 @@ public class MqJmsTemplateCache {
 		return jmsTemplateMap;
 	}
 
+	public JmsTemplate getJmsTemplate(final String key) throws QueueException {
+		if (jmsTemplateMap.containsKey(key)) {
+			return jmsTemplateMap.get(key);
+		}
+		throw new QueueException(ErrorCode.CONFIG, ErrorMsg.CONFIG);
+	}
 }

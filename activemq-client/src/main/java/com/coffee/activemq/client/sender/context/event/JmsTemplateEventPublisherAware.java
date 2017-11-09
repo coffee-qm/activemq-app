@@ -11,6 +11,8 @@ import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
@@ -24,6 +26,7 @@ import com.coffee.activemq.common.db.jdbc.dao.JdbcDAO;
  * @author QM
  * */
 public class JmsTemplateEventPublisherAware implements ApplicationEventPublisherAware {
+	private static Logger LOGGER = LoggerFactory.getLogger(JmsTemplateEventPublisherAware.class);
 
 	private ApplicationEventPublisher jmsTemplateEventPublisher;
 
@@ -42,7 +45,7 @@ public class JmsTemplateEventPublisherAware implements ApplicationEventPublisher
 		try {
 			confList = jdbcDAO.queryForList(sql);
 		} catch (final SQLException e) {
-			System.out.println("日志队列初始化时查询中间件主机配置异常！" + e.getMessage());
+			LOGGER.error("日志队列初始化时查询中间件主机配置异常！", e);
 		}
 		// 
 		Map<String, MqJmsTemplateInfo> mqJmsTemplateInfoMap = null;
@@ -64,13 +67,13 @@ public class JmsTemplateEventPublisherAware implements ApplicationEventPublisher
 					final String key = map.get(MqConstants.MQ_HOST_CODE) + "";
 					// 
 					final MqJmsTemplateInfo vo = new MqJmsTemplateInfo();
-					vo.setHostCode(map.get(MqConstants.MQ_HOST_CODE).toString());
-					vo.setHostIp(map.get(MqConstants.MQ_HOST_IP).toString());
-					vo.setHostPort(map.get(MqConstants.MQ_HOST_PORT).toString());
-					vo.setUserName(map.get(MqConstants.MQ_USER_NAME).toString());
-					vo.setUserPwd(map.get(MqConstants.MQ_USER_PWD).toString());
+					vo.setHostCode(map.get(MqConstants.MQ_HOST_CODE));
+					vo.setHostIp(map.get(MqConstants.MQ_HOST_IP));
+					vo.setHostPort(map.get(MqConstants.MQ_HOST_PORT));
+					vo.setUserName(map.get(MqConstants.MQ_USER_NAME));
+					vo.setUserPwd(map.get(MqConstants.MQ_USER_PWD));
 					vo.setMaxConnections(map.get(MqConstants.MQ_MAX_CONNECTION) == null ? 1
-							: Integer.parseInt(map.get(MqConstants.MQ_MAX_CONNECTION).toString()));
+							: Integer.parseInt(map.get(MqConstants.MQ_MAX_CONNECTION)));
 					mqJmsTemplateInfoMap.put(key, vo);
 				}
 			}

@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.coffee.activemq.common.config.model.MqQueueConf;
+import com.coffee.activemq.common.exception.ErrorCode;
+import com.coffee.activemq.common.exception.ErrorMsg;
+import com.coffee.activemq.common.exception.QueueException;
 
 /**
  * @author QM
@@ -29,7 +32,10 @@ public class MqQueueConfCache {
 		this.queueConfInfoVOMap = queueConfInfoVOMap;
 	}
 
-	public MqQueueConf getQueueConfInfoByCode(final String queueCode) {
-		return queueConfInfoVOMap == null ? null : queueConfInfoVOMap.get(queueCode);
+	public MqQueueConf getQueueConfInfoByCode(final String queueCode) throws QueueException {
+		if (queueConfInfoVOMap.containsKey(queueCode)) {
+			return queueConfInfoVOMap.get(queueCode);
+		}
+		throw new QueueException(ErrorCode.CONFIG, ErrorMsg.CONFIG);
 	}
 }

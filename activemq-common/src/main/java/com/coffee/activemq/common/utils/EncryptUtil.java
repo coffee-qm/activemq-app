@@ -39,11 +39,11 @@ public class EncryptUtil {
 		return instance;
 	}
 
-	public String encodeDes(final String res, final String key) {
+	public String encode(final String res, final String key) {
 		return keyGeneratorES(res, DES, key, KEY_SIZE_DES, Boolean.TRUE);
 	}
 
-	public String decodeDes(final String res, final String key) {
+	public String decode(final String res, final String key) {
 		return keyGeneratorES(res, DES, key, KEY_SIZE_DES, Boolean.FALSE);
 	}
 

@@ -89,7 +89,7 @@ public class DynamicCreateBean implements ApplicationContextAware, ApplicationLi
 						"tcp://" + vo.getHostIp() + ":" + vo.getHostPort());
 				bdbConn.addPropertyValue("userName", vo.getUserName());
 				bdbConn.addPropertyValue("password",
-						EncryptUtil.getInstance().DESdecode(vo.getUserPwd(), "activemq"));
+						EncryptUtil.getInstance().decode(vo.getUserPwd(), "activemq"));
 				// 注册bean
 				acf.registerBeanDefinition(beanKeyConn, bdbConn.getBeanDefinition());
 

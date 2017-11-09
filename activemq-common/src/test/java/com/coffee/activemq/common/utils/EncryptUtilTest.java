@@ -11,14 +11,14 @@ public class EncryptUtilTest {
 	@Test
 	public void encode() {
 		final String decode = "admin";
-		final String encode = EncryptUtil.getInstance().encodeDes(decode, KEY);
+		final String encode = EncryptUtil.getInstance().encode(decode, KEY);
 		System.out.println("encode:" + encode);
 	}
 
 	@Test
 	public void decode() {
 		final String encode = "D820BC4E6689C4E5";
-		final String decode = EncryptUtil.getInstance().decodeDes(encode, KEY);
+		final String decode = EncryptUtil.getInstance().decode(encode, KEY);
 		System.out.println("decode:" + decode);
 	}
 }

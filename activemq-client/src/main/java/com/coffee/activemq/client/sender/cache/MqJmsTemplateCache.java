@@ -29,10 +29,6 @@ public class MqJmsTemplateCache {
 		this.jmsTemplateMap = jmsTemplateMap;
 	}
 
-	public Map<String, JmsTemplate> getJmsTemplateMap() {
-		return jmsTemplateMap;
-	}
-
 	public JmsTemplate getJmsTemplate(final String key) throws QueueException {
 		if (jmsTemplateMap.containsKey(key)) {
 			return jmsTemplateMap.get(key);

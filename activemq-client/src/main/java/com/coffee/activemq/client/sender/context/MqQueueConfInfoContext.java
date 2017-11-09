@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.coffee.activemq.client.sender.cache.MqQueueConfCache;
-import com.coffee.activemq.common.MqConstants;
 import com.coffee.activemq.common.config.model.MqQueueConf;
+import com.coffee.activemq.common.consts.MqConstants;
 import com.coffee.activemq.common.db.jdbc.dao.JdbcDAO;
 
 /**

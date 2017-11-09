@@ -8,6 +8,7 @@ import org.springframework.jms.core.JmsTemplate;
 import com.coffee.activemq.client.sender.cache.MqJmsTemplateCache;
 import com.coffee.activemq.client.sender.cache.MqQueueConfCache;
 import com.coffee.activemq.client.sender.jms.core.MessageCreator;
+import com.coffee.activemq.client.sender.service.MqSender;
 import com.coffee.activemq.common.config.model.MqQueueConf;
 import com.coffee.activemq.common.exception.ErrorCode;
 import com.coffee.activemq.common.exception.ErrorMsg;
@@ -18,20 +19,11 @@ import com.coffee.activemq.common.exception.QueueException;
  * 
  * @author QM
  * */
-public class MqSenderSvc {
+public class MqSenderSvc implements MqSender {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MqSenderSvc.class);
 
-	/**
-	 * Send message to queue
-	 * 
-	 * @param queueCode
-	 *            queueCode
-	 * @param message
-	 *            message
-	 * @throws QueueException
-	 *             QueueException
-	 */
+	@Override
 	public void send(final String queueCode, final Object message) throws QueueException {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Try to send message to:{}", queueCode);

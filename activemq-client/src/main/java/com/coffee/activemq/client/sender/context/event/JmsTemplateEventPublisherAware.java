@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
-import com.coffee.activemq.common.MqConstants;
 import com.coffee.activemq.common.config.model.MqJmsTemplateInfo;
+import com.coffee.activemq.common.consts.MqConstants;
 import com.coffee.activemq.common.db.jdbc.dao.JdbcDAO;
 
 /**
@@ -26,6 +26,7 @@ import com.coffee.activemq.common.db.jdbc.dao.JdbcDAO;
  * @author QM
  * */
 public class JmsTemplateEventPublisherAware implements ApplicationEventPublisherAware {
+
 	private static Logger LOGGER = LoggerFactory.getLogger(JmsTemplateEventPublisherAware.class);
 
 	private ApplicationEventPublisher jmsTemplateEventPublisher;

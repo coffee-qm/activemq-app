@@ -1,21 +1,19 @@
 package com.coffee.activemq.common.exception;
 
+/**
+ * @author QM
+ * */
 public class BusinessException extends Exception {
 
-	private static final long serialVersionUID = -7245736834087547904L;
-
-	private Long exeptionTypeId;
-
-	private Long objId;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4194033122908893859L;
 
 	private int errorCode;
 
 	public int getErrorCode() {
 		return errorCode;
-	}
-
-	public void setErrorCode(final int errorCode) {
-		this.errorCode = errorCode;
 	}
 
 	public BusinessException(final String message) {
@@ -27,27 +25,11 @@ public class BusinessException extends Exception {
 		this.errorCode = errorCode;
 	}
 
-	public BusinessException(final int errorCode, final Throwable throwable) {
+	public BusinessException(final Throwable t) {
+		super(t);
+	}
+
+	public BusinessException(final int errorCode, final Throwable t) {
 		this.errorCode = errorCode;
-	}
-
-	public BusinessException(final Throwable throwable) {
-		super(throwable);
-	}
-
-	public Long getExeptionTypeId() {
-		return exeptionTypeId;
-	}
-
-	public void setExeptionTypeId(final Long exeptionTypeId) {
-		this.exeptionTypeId = exeptionTypeId;
-	}
-
-	public Long getObjId() {
-		return objId;
-	}
-
-	public void setObjId(final Long objId) {
-		this.objId = objId;
 	}
 }

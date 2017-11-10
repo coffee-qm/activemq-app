@@ -25,7 +25,7 @@ public interface MqConstants {
 
 	String ACTIVEMQ_QUEUE_BEAN_CLASS = "org.apache.activemq.command.ActiveMQQueue";
 
-	String DIC_MESSAGE_LISTENER_BEAN_CLASS = "com.tydic.mq.server.receiver.jms.DicMessageListener";
+	String MESSAGE_LISTENER_BEAN_CLASS = "com.tydic.mq.server.receiver.jms.DicMessageListener";
 
 	String JMS_LISTENER_CONTAINER_BEAN_CLASS = "org.springframework.jms.listener.DefaultMessageListenerContainer";
 

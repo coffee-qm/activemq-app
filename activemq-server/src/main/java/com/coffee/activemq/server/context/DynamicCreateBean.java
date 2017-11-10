@@ -1,6 +1,5 @@
-package com.coffee.activemq.client.sender.context;
+package com.coffee.activemq.server.context;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -15,13 +14,10 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.jms.core.JmsTemplate;
 
-import com.coffee.activemq.client.sender.cache.MqJmsTemplateCache;
-import com.coffee.activemq.client.sender.context.event.JmsTemplateEvent;
-import com.coffee.activemq.common.config.model.MqJmsTemplateInfo;
 import com.coffee.activemq.common.consts.MqConstants;
-import com.coffee.activemq.common.utils.EncryptUtil;
+import com.coffee.activemq.server.config.model.MqJmsListenerContainerInfo;
+import com.coffee.activemq.server.context.event.JmsListenerContainerEvent;
 
 /**
  * DynamicCreateBean
@@ -42,30 +38,29 @@ public class DynamicCreateBean implements ApplicationContextAware, ApplicationLi
 	@Override
 	public void onApplicationEvent(final ApplicationEvent event) {
 		// 如果是容器刷新事件OR Start Event
-		if (event instanceof JmsTemplateEvent) {
-			LOGGER.info("监听到JmsTemplateEvent");
+		if (event instanceof JmsListenerContainerEvent) {
+			LOGGER.info("监听到JmsListenerContainerEvent");
 			try {
-				this.regDynamicJmsTemplatBean(event.getSource());
+				regDynamicJmsListenerContainerBean(event.getSource());
 			} catch (final Exception e) {
 				LOGGER.error("Failed to register bean.", e);
 			}
 		}
 	}
 
-	/**
-	 * 
-	 * */
 	@SuppressWarnings("unchecked")
-	private void regDynamicJmsTemplatBean(final Object o) {
+	private void regDynamicJmsListenerContainerBean(final Object o) {
 		// 把JmsTemplate bean注册到容器中
 		if (o instanceof Map) {
-			final Map<String, MqJmsTemplateInfo> mqJmsTemplateInfoMap = (Map<String, MqJmsTemplateInfo>) o;
-			this.addJmsTemplateBeanToApp(mqJmsTemplateInfoMap);
+			final Map<String, MqJmsListenerContainerInfo> mqJmsListenerContainerInfo = (Map<String, MqJmsListenerContainerInfo>) o;
+			this.addJmsListenerContainerBeanToApp(mqJmsListenerContainerInfo);
 		}
 	}
 
-	private void addJmsTemplateBeanToApp(final Map<String, MqJmsTemplateInfo> mqJmsTemplateInfoMap) {
-		if (MapUtils.isEmpty(mqJmsTemplateInfoMap)) {
+	private void addJmsListenerContainerBeanToApp(
+			final Map<String, MqJmsListenerContainerInfo> mqJmsListenerContainerInfo) {
+		// 获取MQ中间件配置信息Map
+		if (MapUtils.isEmpty(mqJmsListenerContainerInfo)) {
 			return;
 		}
 		// 
@@ -75,13 +70,17 @@ public class DynamicCreateBean implements ApplicationContextAware, ApplicationLi
 		BeanDefinitionBuilder bdb;
 		BeanDefinitionBuilder bdbConn; // 链接
 		BeanDefinitionBuilder bdbConnPool; // 链接池
+		BeanDefinitionBuilder bdbQueueDest; // 目标队列
+		BeanDefinitionBuilder bdbMsgListener; // 消息监听器
+		// 
 		// 根据数据源得到数据，动态创建bean 并将bean注册到applicationContext中去
-		final Map<String, JmsTemplate> jmsTemplateMap = new HashMap<String, JmsTemplate>();
-		for (final Entry<String, MqJmsTemplateInfo> entry : mqJmsTemplateInfoMap.entrySet()) {
-			// bean ID
-			final String key = entry.getKey();
+		for (final Entry<String, MqJmsListenerContainerInfo> entry : mqJmsListenerContainerInfo
+				.entrySet()) {
 			// 
-			final MqJmsTemplateInfo vo = entry.getValue();
+			final String key = entry.getKey();
+			final MqJmsListenerContainerInfo vo = entry.getValue();
+			// bean ID
+			// 
 			// 1. 链接
 			// 创建bean
 			final String beanKeyConn = "ACTIVEMQ_CONNECTION_FACTORY_" + key;
@@ -89,10 +88,9 @@ public class DynamicCreateBean implements ApplicationContextAware, ApplicationLi
 					.rootBeanDefinition(MqConstants.ACTIVEMQ_CONNECTION_FACTORY_BEAN_CLASS);
 			bdbConn.getBeanDefinition().setAttribute("id", beanKeyConn);
 			bdbConn.addPropertyValue("brokerURL",
-					"tcp://" + vo.getHostIp() + ":" + vo.getHostPort());
+					"failover:(tcp://" + vo.getHostIp() + ":" + vo.getHostPort() + ")");
 			bdbConn.addPropertyValue("userName", vo.getUserName());
-			bdbConn.addPropertyValue("password",
-					EncryptUtil.getInstance().decode(vo.getUserPwd(), "activemq"));
+			bdbConn.addPropertyValue("password", vo.getUserPwd());
 			// 注册bean
 			acf.registerBeanDefinition(beanKeyConn, bdbConn.getBeanDefinition());
 
@@ -108,19 +106,39 @@ public class DynamicCreateBean implements ApplicationContextAware, ApplicationLi
 			// 注册bean
 			acf.registerBeanDefinition(beanKeyConnPool, bdbConnPool.getBeanDefinition());
 
-			// 3. JmsTemplate
+			// 3. Queue Destination
 			// 创建bean
-			final String beanKey = "jmsQueueTemplate_" + key;
-			bdb = BeanDefinitionBuilder.rootBeanDefinition(MqConstants.JMS_TEMPLATE_BEAN_CLASS);
+			final String beanKeyQueueDest = "queueDestination_" + key;
+			bdbQueueDest = BeanDefinitionBuilder
+					.rootBeanDefinition(MqConstants.ACTIVEMQ_QUEUE_BEAN_CLASS);
+			bdbQueueDest.getBeanDefinition().setAttribute("id", beanKeyQueueDest);
+			bdbQueueDest.addConstructorArgValue(vo.getQueueNameStr());
+			// 注册bean
+			acf.registerBeanDefinition(beanKeyQueueDest, bdbQueueDest.getBeanDefinition());
+
+			// 4. MessageListener
+			// 创建bean
+			final String beanKeyMsgListener = "messageListener_" + key;
+			bdbMsgListener = BeanDefinitionBuilder
+					.rootBeanDefinition(MqConstants.MESSAGE_LISTENER_BEAN_CLASS);
+			bdbMsgListener.getBeanDefinition().setAttribute("id", beanKeyMsgListener);
+			// 注册bean
+			acf.registerBeanDefinition(beanKeyMsgListener, bdbMsgListener.getBeanDefinition());
+
+			// 5. JmsListenerContainer
+			// 创建bean
+			final String beanKey = "jmsListenerContainer_" + key;
+			bdb = BeanDefinitionBuilder
+					.rootBeanDefinition(MqConstants.JMS_LISTENER_CONTAINER_BEAN_CLASS);
 			bdb.getBeanDefinition().setAttribute("id", beanKey);
-			bdb.addConstructorArgReference(beanKeyConnPool);
-			bdb.addPropertyValue("pubSubDomain", "false");
+			bdb.addPropertyReference("connectionFactory", beanKeyConnPool);
+			bdb.addPropertyReference("destination", beanKeyQueueDest);
+			bdb.addPropertyReference("messageListener", beanKeyMsgListener);
+			bdb.addPropertyValue("concurrentConsumers", vo.getConcurrentConsumers());
 			// 注册bean
 			acf.registerBeanDefinition(beanKey, bdb.getBeanDefinition());
-
-			jmsTemplateMap.put(key, (JmsTemplate) acf.getBean(beanKey));
+			// 
+			acf.getBean(beanKey);
 		}
-		// 置于缓存
-		MqJmsTemplateCache.getInstance().setJmsTemplateMap(jmsTemplateMap);
 	}
 }

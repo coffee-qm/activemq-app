@@ -1,5 +1,8 @@
 package com.coffee.activemq.server.config.model;
 
+/**
+ * @author QM
+ * */
 public class MqJmsListenerContainerInfo {
 
 	private String hostCode; // 编码

@@ -3,7 +3,7 @@ package com.coffee.activemq.server.context.event;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * JmsListenerContainer Event
+ * @author QM
  * */
 public class JmsListenerContainerEvent extends ApplicationEvent {
 
